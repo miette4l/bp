@@ -5,8 +5,9 @@ Ref.: Appendix C in https://arxiv.org/abs/2005.07016
 
 Design:
     - data structures: message dictionaries, explicit graph structure with Node classes
-    - nested loops over lists of Node instances (heavy on Python object overhead)
+    - nested loops over lists of Node instances
     - no explicit vectorisation
+    - heavy on python object overhead, dict access
 """
 
 import numpy as np
@@ -189,14 +190,16 @@ if __name__ == "__main__":
     #     print("Estimated error:", e_BP)
     #     print("Iterations:", iterations)
 
-    H = make_repetition(3)
+    H = make_repetition(33333)
     p=0.2
     print(H)
     syndrome, received = get_syndrome(H, p)
     decoder = BPDecoder(H, p)
     start = time.time()
-    result, e_BP, it, soft = decoder.run_bp(syndrome,3)
+    result, e_BP, it, soft = decoder.run_bp(syndrome,33)
     end = time.time()
     print(result)
     print(soft)
     print(f"Time taken: {end-start} s")
+
+    # Computes with n=33333 and max_it=33 in 137s

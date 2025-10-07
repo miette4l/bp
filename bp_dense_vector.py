@@ -4,9 +4,10 @@ Initial implementation of BP algorithm from:
 Ref.: Appendix C in https://arxiv.org/abs/2005.07016
 
 Design:
-    - data structures: one message array continually updated
+    - data structures: one dense message array continually updated
     - operations on that array np-vectorised as much as was straightforward
     - couldn't vectorise the min-abs factor of the parity_to_data....
+    - memory blowup
 """
 
 import numpy as np

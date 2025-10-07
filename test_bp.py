@@ -15,6 +15,7 @@ All bp_module files must provide the same interface:
 import numpy as np
 import pytest
 from scipy.stats import binom
+import scipy.sparse as sp
 
 from code_constructions import make_repetition, make_random_regular_ldpc, get_syndrome
 
@@ -35,6 +36,8 @@ def repetition_bp_stats(bp_module, num_trials=50, distances=[3, 5, 7], p=0.2):
 
         for _ in range(num_trials):
             H = make_repetition(n)
+            if bp_module.__name__ == "bp_sparse":
+                H = sp.csr_matrix(H)
             syndrome, received = get_syndrome(H, p)
             decoder = bp_module.BPDecoder(H, p)
             success, inferred_error, it, soft = decoder.run_bp(syndrome, max_iter=n)
@@ -68,6 +71,8 @@ def ldpc_convergence_likelihood(
     successes = 0
     for _ in range(num_trials):
         H = make_random_regular_ldpc(m, n, row_weight, col_weight)
+        if bp_module.__name__ == "bp_sparse":
+            H = sp.csr_matrix(H)
         syndrome, _ = get_syndrome(H, p)
         decoder = bp_module.BPDecoder(H, p)
         success, _, _, _ = decoder.run_bp(syndrome, max_iter=n)
@@ -85,6 +90,8 @@ def ldpc_convergence_likelihood(
 def small_repetition(bp_module):
     """3-bit repetition code fixture."""
     H = make_repetition(3)
+    if bp_module.__name__ == "bp_sparse":
+        H = sp.csr_matrix(H)
     syndrome = np.array([1, 0])
     return H, syndrome
 

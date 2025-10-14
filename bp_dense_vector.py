@@ -13,11 +13,10 @@ Design:
 import numpy as np
 import time
 
-from bp_decoder import AbstractBPDecoder
 from code_constructions import make_random_regular_ldpc, make_repetition, get_syndrome
 
 
-class BPDecoder(AbstractBPDecoder):
+class BPDecoder():
 
     def __init__(self, H: np.array, p: float):
         """
@@ -25,7 +24,11 @@ class BPDecoder(AbstractBPDecoder):
             H (np.ndarray): Parity-check matrix.
             p (float): Bit-flip probability.
         """
-        super().__init__(H, p)
+        if p == 0:
+            raise ValueError("p cannot be zero")
+        self.H = H.astype(int)
+        self.m, self.n = H.shape
+        self.p = p
 
     def set_initial_llrs(self):
         self.p_l = np.log((1 - self.p) / self.p)
@@ -79,14 +82,11 @@ class BPDecoder(AbstractBPDecoder):
 
 
 if __name__ == "__main__":
-    H = make_repetition(3)
+    H = make_repetition(3333)
     p=0.2
-    print(H)
     syndrome, received = get_syndrome(H, p)
     decoder = BPDecoder(H, p)
     start = time.time()
     result, e_BP, it, soft = decoder.run_bp(syndrome,3)
     end = time.time()
-    print(result)
-    print(soft)
     print(f"Time taken: {end-start} s")

@@ -4,10 +4,13 @@ Initial implementation of BP algorithm from:
 Ref.: Appendix C in https://arxiv.org/abs/2005.07016
 
 Design:
-    - data structures: message dictionaries, explicit graph structure with Node classes
-    - nested loops over lists of Node instances
+    - message dictionaries giving graph structure, explicit with Python classes
+    - loops over neighbour lists
     - no explicit vectorisation
     - heavy on python object overhead, dict access
+    - dense matrix representation for initial storage and H.dot(e_BP)
+    - not GPU-ready: all pure Python
+    - dual horizontal and vertical scanning
 """
 
 import numpy as np
@@ -15,13 +18,7 @@ import networkx as nx
 import matplotlib.pyplot as plt
 import time
 
-from bp_decoder import AbstractBPDecoder
 from code_constructions import make_random_regular_ldpc, make_repetition, get_syndrome
-
-
-# -----------------------------
-# Node classes
-# -----------------------------
 
 
 class Node:
@@ -49,12 +46,7 @@ class ParityNode(Node):
         self.msgs_to_data = {}
 
 
-# -----------------------------
-# BP Decoder
-# -----------------------------
-
-
-class BPDecoder(AbstractBPDecoder):
+class BPDecoder():
     """Belief Propagation decoder for binary linear codes."""
 
     def __init__(self, H, p):
@@ -63,7 +55,11 @@ class BPDecoder(AbstractBPDecoder):
             H (np.ndarray): Parity-check matrix.
             p (float): Bit-flip probability.
         """
-        super().__init__(H, p)
+        if p == 0:
+            raise ValueError("p cannot be zero")
+        self.H = H.astype(int)
+        self.m, self.n = H.shape
+        self.p = p
         self.data_nodes = [DataNode(j) for j in range(self.n)]
         self.parity_nodes = [ParityNode(i) for i in range(self.m)]
 
@@ -116,6 +112,10 @@ class BPDecoder(AbstractBPDecoder):
         Returns:
             tuple: (success: bool, estimated_error: np.ndarray, iterations: int)
         """
+        e_BP = np.zeros(self.n, dtype=int)  
+        soft = np.zeros(self.n)            
+        it = 0                               
+
         self.set_initial_llrs()
 
         # --- initial priming step (iteration 0) ---
@@ -168,10 +168,6 @@ class BPDecoder(AbstractBPDecoder):
         plt.show()
 
 
-# -----------------------------
-# Demo
-# -----------------------------
-
 if __name__ == "__main__":
 
     # m, n = 5, 10
@@ -201,5 +197,3 @@ if __name__ == "__main__":
     print(result)
     print(soft)
     print(f"Time taken: {end-start} s")
-
-    # Computes with n=33333 and max_it=33 in 137s

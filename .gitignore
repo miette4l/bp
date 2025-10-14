@@ -214,3 +214,7 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+profile.prof
+bp_profiling_results.csv
+bp_profiler.py

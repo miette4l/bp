@@ -20,12 +20,6 @@ import scipy.sparse as sp
 from code_constructions import make_repetition, make_random_regular_ldpc, get_syndrome
 
 
-
-# -----------------------------
-# Helper functions
-# -----------------------------
-
-
 def repetition_bp_stats(bp_module, num_trials=50, distances=[3, 5, 7], p=0.2):
     """Compute convergence %, logical failure %, and avg iterations for repetition codes."""
     stats = {}
@@ -36,7 +30,7 @@ def repetition_bp_stats(bp_module, num_trials=50, distances=[3, 5, 7], p=0.2):
 
         for _ in range(num_trials):
             H = make_repetition(n)
-            if bp_module.__name__ == "bp_sparse":
+            if bp_module.__name__ == "bp_sparse_scipy":
                 H = sp.csr_matrix(H)
             syndrome, received = get_syndrome(H, p)
             decoder = bp_module.BPDecoder(H, p)
